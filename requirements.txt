@@ -7,3 +7,8 @@ uvicorn
 onnx
 onnxruntime
 skl2onnx
+streamlit
+matplotlib
+seaborn
+pydantic
+requests

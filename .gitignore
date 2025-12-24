@@ -3,6 +3,10 @@
 venv/
 env/
 
+# Archivos del modelo entrenado (ONNX) No subir hasta lograr buen versionado
+# E ignorar el modelo sin compresión debido a limite de tamaño en GitHub (100MB max)
+artifacts/flight_delay_rf_weighted.onnx
+
 # Archivos temporales de Python (Basura automática)
 __pycache__/
 *.py[cod]
