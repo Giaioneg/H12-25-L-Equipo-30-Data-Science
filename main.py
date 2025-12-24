@@ -14,7 +14,7 @@ input_name = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global risk_maps, sess, input_name
-    print("🔄 INICIO: Intentando cargar artefactos...")  # <--- NUEVO
+    print("🔄 INICIO: Intentando cargar artefactos...")  
     try:
         # Cargar mapas
         print("   -> Cargando mapa CARRIER...") 
@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
         
         # Cargar modelo
         print("   -> Cargando modelo ONNX...")
-        sess = rt.InferenceSession(f"{ARTIFACTS_DIR}/flight_delay_rf.onnx")
+        sess = rt.InferenceSession(f"{ARTIFACTS_DIR}/flight_delay_rf_weighted.onnx")
         input_name = sess.get_inputs()[0].name
         
         print("✅ ÉXITO: Todo cargado correctamente.")
@@ -86,7 +86,7 @@ def predict_delay(data: FlightData):
     probability = res[1][0][1] # Probabilidad de retraso (Clase 1)
     
     # Umbral personalizado definido por Data Science
-    threshold = 0.55
+    threshold = 0.5
     prediction = 1 if probability > threshold else 0
 
     return {
