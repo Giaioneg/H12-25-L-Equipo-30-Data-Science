@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlightOnTime - Predicción de Vuelos</title>
+    
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <h1>✈️ FlightOnTime</h1>
+        <p>Predicción inteligente de retrasos en EE.UU.</p>
+    </div>
+
+    <form id="predictionForm" autocomplete="off">
+        
+        <div class="form-group">
+            <label for="carrier-input">Aerolínea</label>
+            <input type="text" id="carrier-input" placeholder="Ej: American, Delta..." required>
+            <input type="hidden" id="carrier-real-value" name="CARRIER_NAME">
+            <div id="carrier-list" class="autocomplete-items"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="airport-input">Aeropuerto de Origen</label>
+            <input type="text" id="airport-input" placeholder="Ej: JFK, Miami..." required>
+            <input type="hidden" id="airport-real-value" name="DEPARTING_AIRPORT">
+            <div id="airport-list" class="autocomplete-items"></div>
+        </div>
+
+        <div class="form-group" style="display: flex; gap: 10px;">
+            <div style="flex: 1;">
+                <label>Fecha</label>
+                <input type="date" id="date-input" required>
+            </div>
+            <div style="flex: 1;">
+                <label>Hora</label>
+                <input type="time" id="time-input" required>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-predict">Predecir Riesgo</button>
+    </form>
+
+    <div id="loader" class="loader"></div>
+
+    <div id="result" class="result-box">
+        <h3 id="result-title"></h3>
+        <span id="result-percent" class="big-percent"></span>
+        <p id="result-msg"></p>
+    </div>
+</div>
+
+<script src="js/script.js"></script>
+
+</body>
+</html>

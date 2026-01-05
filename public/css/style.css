@@ -1,0 +1,134 @@
+:root {
+    --primary: #0056b3;
+    --secondary: #00a8e8;
+    --bg: #f4f7f6;
+    --text: #333;
+    --success: #28a745;
+    --danger: #dc3545;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    color: var(--text);
+}
+
+.card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 450px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.header h1 { margin: 0; color: var(--primary); font-size: 1.8rem; }
+.header p { margin-top: 0.5rem; color: #666; font-size: 0.9rem; }
+
+.form-group {
+    margin-bottom: 1.2rem;
+    position: relative; /* Clave para el autocomplete */
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Estilo de los Inputs */
+input, select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+}
+
+input:focus {
+    border-color: var(--secondary);
+    outline: none;
+}
+
+/* AUTOCOMPLETE STYLES (La magia del Front) */
+.autocomplete-items {
+    position: absolute;
+    border: 1px solid #d4d4d4;
+    border-bottom: none;
+    border-top: none;
+    z-index: 99;
+    top: 100%;
+    left: 0;
+    right: 0;
+    border-radius: 0 0 8px 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.autocomplete-items div {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #d4d4d4;
+    font-size: 0.9rem;
+}
+
+.autocomplete-items div:hover {
+    background-color: #e9e9e9; 
+}
+
+.autocomplete-items div strong {
+    color: var(--primary);
+}
+
+/* Botón */
+.btn-predict {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+    margin-top: 1rem;
+}
+
+.btn-predict:hover { transform: translateY(-2px); }
+.btn-predict:active { transform: translateY(0); }
+
+/* Resultado */
+.result-box {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    display: none; /* Oculto por defecto */
+    animation: fadeIn 0.5s;
+}
+
+.result-safe { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.result-danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+.big-percent { font-size: 2.5rem; font-weight: bold; display: block; margin: 10px 0; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; display: none;}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
