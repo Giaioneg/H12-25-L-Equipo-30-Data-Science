@@ -217,6 +217,8 @@ def predict_flight(data: FlightRequest):
     traffic_data = smart_traffic_lookup.get(traffic_key, {})
 
     val_seats = ops_data.get('NUMBER_OF_SEATS', static_defaults.get('NUMBER_OF_SEATS', 150))
+    val_attendants = ops_data.get('FLT_ATTENDANTS_PER_PASS', static_defaults.get('FLT_ATTENDANTS_PER_PASS', 0.009))
+    val_ground = ops_data.get('GROUND_SERV_PER_PASS', static_defaults.get('GROUND_SERV_PER_PASS', 0.001))
     val_plane_age = ops_data.get('PLANE_AGE', static_defaults.get('PLANE_AGE', 12))
     val_concurrent = traffic_data.get('CONCURRENT_FLIGHTS', static_defaults.get('CONCURRENT_FLIGHTS', 20))
     
@@ -232,8 +234,7 @@ def predict_flight(data: FlightRequest):
         final_prcp, 25.0, final_awnd, val_plane_age, 2000,
         risk_carrier, risk_airport, risk_time,
         final_snow, 0.0, val_seats,
-        static_defaults.get('FLT_ATTENDANTS_PER_PASS', 0.009),
-        static_defaults.get('GROUND_SERV_PER_PASS', 0.001),
+        val_attendants, val_ground,
         risk_prev
     ]
 

@@ -42,13 +42,13 @@ if __name__ == "__main__":
     import sys
     import os
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-    from main import FlightData 
+    from main import FlightRequest  
 
     # Generar código
-    java_class = generate_java_dto(FlightData, "FlightDataDTO")
+    java_class = generate_java_dto(FlightRequest, "FlightRequestDTO")
     
     # Guardar archivo
-    with open(f'{ARTIFACTS_DIR}/FlightDataDTO.java', "w") as f:
+    with open(f'{ARTIFACTS_DIR}/FlightRequestDTO.java', "w") as f:
         f.write(java_class)
-    
-    print(f'✅ Archivo Java generado en {ARTIFACTS_DIR}/FlightDataDTO.java')
+
+    print(f'✅ Archivo Java generado en {ARTIFACTS_DIR}/FlightRequestDTO.java')
