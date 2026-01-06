@@ -17,6 +17,3 @@ Thumbs.db
 
 # Opcional: Si el CSV es muy pesado (>100MB), descomenta esto:
 Data/
-# Data/Jan_2019_ontime.csv
-# Data/full_data_flightdelay.csv
-# Data/Combined_Flights_2022.csv.zip
