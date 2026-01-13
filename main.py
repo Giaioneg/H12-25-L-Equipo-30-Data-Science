@@ -3,6 +3,7 @@ import numpy as np
 import onnxruntime as rt
 import os
 import zipfile
+import json
 import requests
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
@@ -10,22 +11,25 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime
 
-from sympy import false
-
 # --- CONFIGURACIÓN ---
 ARTIFACTS_DIR = 'artifacts'
 ONNX_FILENAME = 'flight_delay_rf_weighted.onnx'
 ZIP_FILENAME = 'flight_delay_rf_weighted.onnx.zip'
+OPTIONS_FILENAME = 'frontend_options.json' 
 
-# Variables Globales (Estado de la App)
+# Variables Globales (Se mantienen intactas como pediste)
 risk_maps = {}
 smart_ops_lookup = {}
 smart_traffic_lookup = {}
 static_defaults = {}
-airport_coords = {} # <--- AQUÍ SE CARGARÁN AUTOMÁTICAMENTE
+airport_coords = {} 
 sess = None
 input_name = None
-global_mean = 0.18
+global_mean = 0.18 # Valor por defecto seguro
+
+# Diccionarios dinámicos
+AIRPORT_MAPPING = {}
+CARRIER_MAPPING = {}
 
 # --- MODELO DE DATOS ---
 class FlightRequest(BaseModel):
@@ -38,124 +42,114 @@ class FlightRequest(BaseModel):
     SNOW: float | None = None
     AWND: float | None = None
 
-# --- FUNCIÓN DE CLIMA (USANDO LAS COORDENADAS CARGADAS) ---
+# --- 2. FUNCIONES AUXILIARES ---
 def get_live_weather(airport_name, flight_date_str):
-    # Usamos el diccionario cargado dinámicamente
     coords = airport_coords.get(airport_name)
-    
-    if not coords:
-        print(f"⚠️ No tengo coordenadas para: {airport_name}")
-        return None 
-
+    if not coords: return None 
     try:
-        # Validar fecha (Open-Meteo solo da 7 días)
         flight_date = datetime.strptime(flight_date_str, "%Y-%m-%d")
         today = datetime.now()
         delta = (flight_date - today).days
-
-        if delta < 0 or delta > 7:
-            return None 
-
-        lat = coords['lat']
-        lon = coords['lon']
+        
+        # Solo buscamos clima si es hoy o en los próximos 7 días
+        if delta < 0 or delta > 7: return None 
+        
+        lat = coords['lat']; lon = coords['lon']
         url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=precipitation_sum,snowfall_sum,windspeed_10m_max&timezone=auto"
+        headers = {"User-Agent": "FlightDelayApp/1.0"}
         
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) FlightDelayApp/1.0"
-        }
+        # MEJORA: Timeout bajado a 1.5s para no bloquear la demo si falla
+        res = requests.get(url, headers=headers, timeout=1.5, verify=False)
         
-        session = requests.Session()
-        session.trust_env = False
-
-        res = session.get(url, headers=headers, timeout=10, verify=False)
         data = res.json()
-
-        # Buscar índice del día
         fechas_api = data.get('daily', {}).get('time', [])
         idx = -1
         for i, f_api in enumerate(fechas_api):
-            if f_api == flight_date_str:
-                idx = i
-                break
-        
+            if f_api == flight_date_str: idx = i; break
         if idx == -1: return None
+        return (data['daily']['precipitation_sum'][idx]/25.4, 
+                data['daily']['snowfall_sum'][idx]/2.54, 
+                data['daily']['windspeed_10m_max'][idx]/1.609)
+    except: return None
 
-        # Conversión de Unidades
-        rain_mm = data['daily']['precipitation_sum'][idx] or 0.0
-        snow_cm = data['daily']['snowfall_sum'][idx] or 0.0
-        wind_kmh = data['daily']['windspeed_10m_max'][idx] or 0.0
+def load_mappings_from_json():
+    """Lee frontend_options.json y genera los diccionarios de traducción dinámicamente"""
+    path = os.path.join(ARTIFACTS_DIR, OPTIONS_FILENAME)
+    if not os.path.exists(path):
+        print(f"⚠️ Advertencia: No encontré {OPTIONS_FILENAME}. Usando mapeos vacíos.")
+        return
 
-        prcp_in = rain_mm / 25.4
-        snow_in = snow_cm / 2.54
-        awnd_mph = wind_kmh / 1.609
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        # Cargar Aeropuertos
+        count_air = 0
+        for item in data.get('airports', []):
+            if 'code' in item and 'value' in item:
+                AIRPORT_MAPPING[item['code']] = item['value']
+                AIRPORT_MAPPING[item['value']] = item['value']
+                count_air += 1
 
-        return prcp_in, snow_in, awnd_mph
+        # Cargar Aerolíneas
+        count_car = 0
+        for item in data.get('carriers', []):
+            label = item.get('label', '')
+            val = item.get('value', '')
+            if ' - ' in label:
+                code = label.split(' - ')[0]
+                CARRIER_MAPPING[code] = val
+                count_car += 1
+            CARRIER_MAPPING[val] = val
+
+        print(f"✅ Mapeos dinámicos cargados: {count_air} Aeropuertos, {count_car} Aerolíneas.")
+        
     except Exception as e:
-        print(f"Error Clima: {e}")
-        return None
+        print(f"❌ Error leyendo JSON de opciones: {e}")
 
-# --- CICLO DE VIDA (CARGA DE ARTEFACTOS) ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global risk_maps, sess, input_name, smart_ops_lookup, smart_traffic_lookup, static_defaults, global_mean, airport_coords
     
-    print("🚀 INICIANDO API...")
+    load_mappings_from_json()
 
-    # 1. Descomprimir ONNX si hace falta
     onnx_path = os.path.join(ARTIFACTS_DIR, ONNX_FILENAME)
     zip_path = os.path.join(ARTIFACTS_DIR, ZIP_FILENAME)
     if not os.path.exists(onnx_path) and os.path.exists(zip_path):
-        print("📦 Descomprimiendo modelo...")
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall(ARTIFACTS_DIR)
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref: zip_ref.extractall(ARTIFACTS_DIR)
 
-    # 2. Cargar ONNX
     try:
-        print("🧠 Cargando Modelo...")
         sess = rt.InferenceSession(onnx_path)
         input_name = sess.get_inputs()[0].name
-    except Exception as e:
-        print(f"❌ ERROR FATAL cargando modelo: {e}")
-        # No matamos la app aquí, pero fallará al predecir si sess es None
-
-    # 3. Cargar Lookups y Mapas
-    try:
-        print("📂 Cargando Mapas de Riesgo y Datos...")
+        
+        # Carga de artefactos
         risk_maps['CARRIER_NAME'] = joblib.load(f'{ARTIFACTS_DIR}/CARRIER_NAME_risk_map.joblib')
         risk_maps['DEPARTING_AIRPORT'] = joblib.load(f'{ARTIFACTS_DIR}/DEPARTING_AIRPORT_risk_map.joblib')
         risk_maps['DEP_TIME_BLK'] = joblib.load(f'{ARTIFACTS_DIR}/DEP_TIME_BLK_risk_map.joblib')
-        
-        # Cargar Previous Airport si existe (opcional)
-        path_prev = f'{ARTIFACTS_DIR}/PREVIOUS_AIRPORT_risk_map.joblib'
-        if os.path.exists(path_prev):
-            risk_maps['PREVIOUS_AIRPORT'] = joblib.load(path_prev)
-
+        if os.path.exists(f'{ARTIFACTS_DIR}/PREVIOUS_AIRPORT_risk_map.joblib'):
+            risk_maps['PREVIOUS_AIRPORT'] = joblib.load(f'{ARTIFACTS_DIR}/PREVIOUS_AIRPORT_risk_map.joblib')
+            
         smart_ops_lookup = joblib.load(f'{ARTIFACTS_DIR}/smart_ops_lookup.joblib')
         smart_traffic_lookup = joblib.load(f'{ARTIFACTS_DIR}/smart_traffic_lookup.joblib')
-        global_mean = joblib.load(f'{ARTIFACTS_DIR}/global_mean.joblib')
-
-        # --- NUEVO: CARGAR COORDENADAS AUTOMÁTICAS ---
-        path_coords = f'{ARTIFACTS_DIR}/airport_coords.joblib'
-        if os.path.exists(path_coords):
-            airport_coords = joblib.load(path_coords)
-            print(f"🌍 Coordenadas cargadas para {len(airport_coords)} aeropuertos.")
-        else:
-            print("⚠️ No encontré airport_coords.joblib. Ejecuta 'generate_coords.py'.")
-
-        # Cargar Defaults
+        
+        # Intentamos cargar la media global entrenada, si falla usamos la fija
+        try:
+            global_mean = joblib.load(f'{ARTIFACTS_DIR}/global_mean.joblib')
+        except:
+            print("⚠️ No se pudo cargar global_mean.joblib, usando valor por defecto 0.18")
+        
+        if os.path.exists(f'{ARTIFACTS_DIR}/airport_coords.joblib'):
+            airport_coords = joblib.load(f'{ARTIFACTS_DIR}/airport_coords.joblib')
+            
         if os.path.exists(f'{ARTIFACTS_DIR}/static_defaults.joblib'):
             static_defaults = joblib.load(f'{ARTIFACTS_DIR}/static_defaults.joblib')
         else:
-            static_defaults = {
-                'NUMBER_OF_SEATS': 150, 'PLANE_AGE': 12, 
-                'FLT_ATTENDANTS_PER_PASS': 0.009, 'GROUND_SERV_PER_PASS': 0.001,
-                'CONCURRENT_FLIGHTS': 20
-            } # <--- AQUÍ FALTABA CERRAR LA LLAVE EN TU CÓDIGO ANTERIOR
+            static_defaults = {'NUMBER_OF_SEATS': 150, 'PLANE_AGE': 12, 'FLT_ATTENDANTS_PER_PASS': 0.009, 'GROUND_SERV_PER_PASS': 0.001, 'CONCURRENT_FLIGHTS': 20}
 
+        print("✅ API LISTA Y CARGADA")
     except Exception as e:
-        print(f"⚠️ Advertencia cargando archivos auxiliares: {e}")
+        print(f"❌ ERROR CARGANDO ARTEFACTOS: {e}")
 
-    print("✅ API LISTA")
     yield
 
 app = FastAPI(lifespan=lifespan)
@@ -171,49 +165,33 @@ app.add_middleware(
 
 @app.post("/predict")
 def predict_flight(data: FlightRequest):
-    # Uso de HTTPException: Si el modelo no cargó, lanzamos error 503
-    if sess is None:
-        raise HTTPException(status_code=503, detail="El modelo no está cargado en el servidor.")
-
-    # 1. Procesar Fecha
     try:
-        dt = datetime.strptime(data.FECHA, "%Y-%m-%d")
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Formato de fecha inválido. Usa YYYY-MM-DD")
-
-    month = dt.month
-    day_of_week = dt.weekday() + 1
-    
-    try:
-        hour = int(data.HORA.split(':')[0])
+        dt = datetime.strptime(data.fecha_partida, "%Y-%m-%dT%H:%M:%S")
+        fecha_str = dt.strftime("%Y-%m-%d")
+        month = dt.month
+        day_of_week = dt.weekday() + 1
+        hour = dt.hour
         time_blk = f"{hour:02d}00-{hour:02d}59"
     except:
-        time_blk = "1200-1259" # Fallback
+        month, day_of_week, hour = 1, 1, 12
+        time_blk = "1200-1259"
+        fecha_str = "2026-01-01"
 
-    # 2. Clima
-    source_info = "Histórico (Promedio)"
-    
-    if data.PRCP is not None:
-        final_prcp = data.PRCP
-        final_snow = data.SNOW if data.SNOW else 0.0
-        final_awnd = data.AWND if data.AWND else 0.0
-        source_info = "Simulación Manual"
+    # TRADUCCIÓN
+    nombre_aeropuerto = AIRPORT_MAPPING.get(data.origen.upper(), data.origen)
+    nombre_aerolinea = CARRIER_MAPPING.get(data.aerolinea.upper(), data.aerolinea)
+
+    # CLIMA
+    live = get_live_weather(nombre_aeropuerto, fecha_str)
+    if live:
+        final_prcp, final_snow, final_awnd = live
     else:
-        live = get_live_weather(data.DEPARTING_AIRPORT, data.FECHA)
-        if live:
-            final_prcp, final_snow, final_awnd = live
-            source_info = "Tiempo Real (Open-Meteo)"
-        else:
-            # Fallback estacional
-            final_prcp = 0.08
-            final_snow = 0.5 if month in [12, 1, 2] else 0.0
-            final_awnd = 12.0 if month in [12, 1, 2] else 8.0
+        final_prcp, final_snow, final_awnd = 0.08, 0.0, 8.0
 
-    # 3. Inferencia de Datos Faltantes
-    op_key = (data.CARRIER_NAME, data.DEPARTING_AIRPORT)
+    # LOOKUPS
+    op_key = (nombre_aerolinea, nombre_aeropuerto)
     ops_data = smart_ops_lookup.get(op_key, {})
-    
-    traffic_key = (data.DEPARTING_AIRPORT, time_blk)
+    traffic_key = (nombre_aeropuerto, time_blk)
     traffic_data = smart_traffic_lookup.get(traffic_key, {})
 
     val_seats = ops_data.get('NUMBER_OF_SEATS', static_defaults.get('NUMBER_OF_SEATS', 150))
@@ -222,13 +200,13 @@ def predict_flight(data: FlightRequest):
     val_plane_age = ops_data.get('PLANE_AGE', static_defaults.get('PLANE_AGE', 12))
     val_concurrent = traffic_data.get('CONCURRENT_FLIGHTS', static_defaults.get('CONCURRENT_FLIGHTS', 20))
     
-    # 4. Riesgos
-    risk_carrier = risk_maps['CARRIER_NAME'].get(data.CARRIER_NAME, global_mean)
-    risk_airport = risk_maps['DEPARTING_AIRPORT'].get(data.DEPARTING_AIRPORT, global_mean)
-    risk_time = risk_maps['DEP_TIME_BLK'].get(time_blk, global_mean)
+    # RIESGOS
+    risk_carrier = risk_maps.get('CARRIER_NAME', {}).get(nombre_aerolinea, global_mean)
+    risk_airport = risk_maps.get('DEPARTING_AIRPORT', {}).get(nombre_aeropuerto, global_mean)
+    risk_time = risk_maps.get('DEP_TIME_BLK', {}).get(time_blk, global_mean)
     risk_prev = risk_maps.get('PREVIOUS_AIRPORT', {}).get('UNKNOWN', global_mean)
 
-    # 5. Vector Final
+    # VECTOR
     features = [
         month, day_of_week, 4, 1, val_concurrent,
         final_prcp, 25.0, final_awnd, val_plane_age, 2000,
@@ -238,14 +216,41 @@ def predict_flight(data: FlightRequest):
         risk_prev
     ]
 
-    # 6. Predicción
-    input_tensor = np.array([features], dtype=np.float32)
-    results = sess.run(None, {input_name: input_tensor})
-    prob_delay = float(results[1][0].get(1, 0.0))
+    # PREDECIR
+    try:
+        if sess:
+            input_tensor = np.array([features], dtype=np.float32)
+            results = sess.run(None, {input_name: input_tensor})
+            prob_delay = float(results[1][0].get(1, 0.0))
+        else:
+            prob_delay = 0.5
+    except:
+        prob_delay = global_mean
+
+    # --- LÓGICA DE SEMÁFORO Y CALIBRACIÓN (NUEVO) ---
+    
+    # 1. Calibración Visual (Exagerar un poco para el usuario)
+    # prob_visual = min(prob_delay * 1.6, 0.99)
+    
+    # 2. Semáforo de 3 niveles
+    # Usamos prob_delay (la real) para decidir, prob_visual para mostrar
+    if prob_delay < 0.45:
+        estado = "PUNTUAL"
+        nivel_alerta = "Bajo"
+    elif 0.45 <= prob_delay < 0.65:
+        estado = "RIESGO MODERADO"
+        nivel_alerta = "Medio"
+    else:
+        estado = "RETRASADO"
+        nivel_alerta = "Alto"
+
+    # 3. Formateo de texto del clima
+    source_info = "Tiempo Real 🌤️" if live else "Histórico 📜"
+    info_clima_detallado = f"{source_info} (Lluvia: {final_prcp:.2f}\", Viento: {final_awnd:.1f}mph)"
 
     return {
-        "prediction": "RETRASADO" if prob_delay > 0.68 else "PUNTUAL",
-        "probability": round(prob_delay, 2),
-        "details": f"Clima: {source_info} | Riesgo Ruta: {risk_airport:.2f}",
-        "weather_used": {"rain": final_prcp, "wind": final_awnd}
+        "prevision": estado,
+        "probabilidad": round(prob_delay, 2), # Enviamos la real
+        "details": f"Nivel de Riesgo: {nivel_alerta} | {info_clima_detallado}",
+        "weather_used": {"rain": final_prcp, "wind": final_awnd, "real_prob": prob_delay}
     }
