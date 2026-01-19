@@ -16,11 +16,11 @@ public class FlightRequestDTO {
     @JsonProperty("DEPARTING_AIRPORT")
     private String DEPARTING_AIRPORT;
 
-    @JsonProperty("FECHA")
-    private String FECHA;
+    @JsonProperty("DATE")
+    private String DATE;
 
-    @JsonProperty("HORA")
-    private String HORA;
+    @JsonProperty("TIME")
+    private String TIME;
 
     @JsonProperty("PRCP")
     private String PRCP;

@@ -35,8 +35,8 @@ CARRIER_MAPPING = {}
 class FlightRequest(BaseModel):
     CARRIER_NAME: str
     DEPARTING_AIRPORT: str
-    FECHA: str
-    HORA: str
+    DATE: str
+    TIME: str
     # Opcionales
     PRCP: float | None = None
     SNOW: float | None = None
@@ -234,23 +234,25 @@ def predict_flight(data: FlightRequest):
     
     # 2. Semáforo de 3 niveles
     # Usamos prob_delay (la real) para decidir, prob_visual para mostrar
-    if prob_delay < 0.45:
-        estado = "PUNTUAL"
-        nivel_alerta = "Bajo"
-    elif 0.45 <= prob_delay < 0.65:
-        estado = "RIESGO MODERADO"
-        nivel_alerta = "Medio"
-    else:
-        estado = "RETRASADO"
-        nivel_alerta = "Alto"
+    """    
+        if prob_delay < 0.45:
+            estado = "PUNTUAL"
+            nivel_alerta = "Bajo"
+        elif 0.45 <= prob_delay < 0.65:
+            estado = "RIESGO MODERADO"
+            nivel_alerta = "Medio"
+        else:
+            estado = "RETRASADO"
+            nivel_alerta = "Alto"
+    """
 
     # 3. Formateo de texto del clima
     source_info = "Tiempo Real 🌤️" if live else "Histórico 📜"
     info_clima_detallado = f"{source_info} (Lluvia: {final_prcp:.2f}\", Viento: {final_awnd:.1f}mph)"
 
     return {
-        "prevision": estado,
+        "prevision": "Retrasado" if prob_delay > 0.55 else "Puntual",
         "probabilidad": round(prob_delay, 2), # Enviamos la real
-        "details": f"Nivel de Riesgo: {nivel_alerta} | {info_clima_detallado}",
+        "details": f"Nivel de Riesgo: {round(risk_prev, 2)} | {info_clima_detallado}",
         "weather_used": {"rain": final_prcp, "wind": final_awnd, "real_prob": prob_delay}
     }
