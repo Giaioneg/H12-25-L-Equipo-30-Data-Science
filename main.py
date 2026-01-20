@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime
 
-# --- CONFIGURACIÓN ---
+# --- CONFIGURACION ---
 ARTIFACTS_DIR = 'artifacts'
 ONNX_FILENAME = 'flight_delay_rf_weighted.onnx'
 ZIP_FILENAME = 'flight_delay_rf_weighted.onnx.zip'
@@ -27,7 +27,7 @@ sess = None
 input_name = None
 global_mean = 0.18 # Valor por defecto seguro
 
-# Diccionarios dinámicos
+# Diccionarios dinamicos
 AIRPORT_MAPPING = {}
 CARRIER_MAPPING = {}
 
@@ -51,7 +51,7 @@ def get_live_weather(airport_name, flight_date_str):
         today = datetime.now()
         delta = (flight_date - today).days
         
-        # Solo buscamos clima si es hoy o en los próximos 7 días
+        # Solo buscamos clima si es hoy o en los proximos 7 dias
         if delta < 0 or delta > 7: return None 
         
         lat = coords['lat']; lon = coords['lon']
@@ -73,10 +73,10 @@ def get_live_weather(airport_name, flight_date_str):
     except: return None
 
 def load_mappings_from_json():
-    """Lee frontend_options.json y genera los diccionarios de traducción dinámicamente"""
+    """Lee frontend_options.json y genera los diccionarios de traduccion dinamicamente"""
     path = os.path.join(ARTIFACTS_DIR, OPTIONS_FILENAME)
     if not os.path.exists(path):
-        print(f"⚠️ Advertencia: No encontré {OPTIONS_FILENAME}. Usando mapeos vacíos.")
+        print(f"Advertencia: No encontre {OPTIONS_FILENAME}. Usando mapeos vacios.")
         return
 
     try:
@@ -91,7 +91,7 @@ def load_mappings_from_json():
                 AIRPORT_MAPPING[item['value']] = item['value']
                 count_air += 1
 
-        # Cargar Aerolíneas
+        # Cargar Aerolineas
         count_car = 0
         for item in data.get('carriers', []):
             label = item.get('label', '')
@@ -102,10 +102,10 @@ def load_mappings_from_json():
                 count_car += 1
             CARRIER_MAPPING[val] = val
 
-        print(f"✅ Mapeos dinámicos cargados: {count_air} Aeropuertos, {count_car} Aerolíneas.")
+        print(f"Mapeos dinamicos cargados: {count_air} Aeropuertos, {count_car} Aerolineas.")
         
     except Exception as e:
-        print(f"❌ Error leyendo JSON de opciones: {e}")
+        print(f"Error leyendo JSON de opciones: {e}")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -136,7 +136,7 @@ async def lifespan(app: FastAPI):
         try:
             global_mean = joblib.load(f'{ARTIFACTS_DIR}/global_mean.joblib')
         except:
-            print("⚠️ No se pudo cargar global_mean.joblib, usando valor por defecto 0.18")
+            print("No se pudo cargar global_mean.joblib, usando valor por defecto 0.18")
         
         if os.path.exists(f'{ARTIFACTS_DIR}/airport_coords.joblib'):
             airport_coords = joblib.load(f'{ARTIFACTS_DIR}/airport_coords.joblib')
@@ -146,9 +146,9 @@ async def lifespan(app: FastAPI):
         else:
             static_defaults = {'NUMBER_OF_SEATS': 150, 'PLANE_AGE': 12, 'FLT_ATTENDANTS_PER_PASS': 0.009, 'GROUND_SERV_PER_PASS': 0.001, 'CONCURRENT_FLIGHTS': 20}
 
-        print("✅ API LISTA Y CARGADA")
+        print("API LISTA Y CARGADA")
     except Exception as e:
-        print(f"❌ ERROR CARGANDO ARTEFACTOS: {e}")
+        print(f"ERROR CARGANDO ARTEFACTOS: {e}")
 
     yield
 
@@ -165,32 +165,45 @@ app.add_middleware(
 
 @app.post("/predict")
 def predict_flight(data: FlightRequest):
+
+    print("\n --- DIAGNOSTICO DE PREDICCION ---")
+    print(f"1. Recibido del Frontend: Carrier='{data.CARRIER_NAME}', Airport='{data.DEPARTING_AIRPORT}'")
+
+    # 1. PROCESAR FECHA (Usando data.DATE, no fecha_partida)
     try:
-        dt = datetime.strptime(data.fecha_partida, "%Y-%m-%dT%H:%M:%S")
-        fecha_str = dt.strftime("%Y-%m-%d")
+        # El frontend manda "YYYY-MM-DD" (ej: 2025-01-20)
+        dt = datetime.strptime(data.DATE, "%Y-%m-%d")
+        fecha_str = data.DATE
         month = dt.month
         day_of_week = dt.weekday() + 1
-        hour = dt.hour
+        
+        # Procesar hora (data.TIME viene como "HH:MM")
+        hour = int(data.TIME.split(':')[0])
         time_blk = f"{hour:02d}00-{hour:02d}59"
-    except:
+    except Exception as e:
+        print(f"Error procesando fecha/hora: {e}")
         month, day_of_week, hour = 1, 1, 12
         time_blk = "1200-1259"
         fecha_str = "2026-01-01"
 
-    # TRADUCCIÓN
-    nombre_aeropuerto = AIRPORT_MAPPING.get(data.origen.upper(), data.origen)
-    nombre_aerolinea = CARRIER_MAPPING.get(data.aerolinea.upper(), data.aerolinea)
+    # 2. TRADUCCION (Usando nombres en INGLES del modelo)
+    # data.DEPARTING_AIRPORT y data.CARRIER_NAME son los correctos
+    nombre_aeropuerto = AIRPORT_MAPPING.get(data.DEPARTING_AIRPORT.upper(), data.DEPARTING_AIRPORT)
+    nombre_aerolinea = CARRIER_MAPPING.get(data.CARRIER_NAME.upper(), data.CARRIER_NAME)
+    
+    print(f"2. Traducido a: Carrier='{nombre_aerolinea}', Airport='{nombre_aeropuerto}'")
 
-    # CLIMA
+    # 3. CLIMA
     live = get_live_weather(nombre_aeropuerto, fecha_str)
     if live:
         final_prcp, final_snow, final_awnd = live
     else:
         final_prcp, final_snow, final_awnd = 0.08, 0.0, 8.0
 
-    # LOOKUPS
+    # 4. LOOKUPS (Busquedas inteligentes)
     op_key = (nombre_aerolinea, nombre_aeropuerto)
     ops_data = smart_ops_lookup.get(op_key, {})
+    
     traffic_key = (nombre_aeropuerto, time_blk)
     traffic_data = smart_traffic_lookup.get(traffic_key, {})
 
@@ -200,13 +213,28 @@ def predict_flight(data: FlightRequest):
     val_plane_age = ops_data.get('PLANE_AGE', static_defaults.get('PLANE_AGE', 12))
     val_concurrent = traffic_data.get('CONCURRENT_FLIGHTS', static_defaults.get('CONCURRENT_FLIGHTS', 20))
     
-    # RIESGOS
+    # 5. RIESGOS (Usando mapas cargados)
     risk_carrier = risk_maps.get('CARRIER_NAME', {}).get(nombre_aerolinea, global_mean)
     risk_airport = risk_maps.get('DEPARTING_AIRPORT', {}).get(nombre_aeropuerto, global_mean)
     risk_time = risk_maps.get('DEP_TIME_BLK', {}).get(time_blk, global_mean)
-    risk_prev = risk_maps.get('PREVIOUS_AIRPORT', {}).get('UNKNOWN', global_mean)
+    
+    # Manejo seguro de Previous Airport
+    print(f"3. Buscando '{nombre_aeropuerto}' en el mapa...")
+    if 'PREVIOUS_AIRPORT' in risk_maps:
+        risk_prev = risk_maps['PREVIOUS_AIRPORT'].get('UNKNOWN', global_mean)
+        print(f"    ENCONTRADO! Valor: {risk_airport}")
+    else:
+        print(f"    NO ENCONTRADO. Usando default: {global_mean}")
+        print("    Quizas quisiste decir alguno de estos?:")
+        risk_prev = global_mean
+        mapa_aeropuertos = risk_maps.get('DEPARTING_AIRPORT', {})
+        for k in list(mapa_aeropuertos.keys())[:50]: # Imprimimos los primeros 50 para ver
+             if "Birmingham" in k:
+                 print(f"      -> '{k}'") # Fijate si tiene espacios extra aqui
+    
+        print("--------------------------------------\n")
 
-    # VECTOR
+    # 6. VECTOR DE ENTRADA (Orden ESTRICTO del modelo ONNX)
     features = [
         month, day_of_week, 4, 1, val_concurrent,
         final_prcp, 25.0, final_awnd, val_plane_age, 2000,
@@ -216,43 +244,33 @@ def predict_flight(data: FlightRequest):
         risk_prev
     ]
 
-    # PREDECIR
+    # 7. PREDECIR
     try:
         if sess:
             input_tensor = np.array([features], dtype=np.float32)
             results = sess.run(None, {input_name: input_tensor})
+            # El modelo devuelve un mapa en la posicion 1. Buscamos la prob de clase 1 (Retraso)
             prob_delay = float(results[1][0].get(1, 0.0))
         else:
+            print("Modelo no cargado (sess es None)")
             prob_delay = 0.5
-    except:
+    except Exception as e:
+        print(f"Error en inferencia ONNX: {e}")
         prob_delay = global_mean
 
-    # --- LÓGICA DE SEMÁFORO Y CALIBRACIÓN (NUEVO) ---
-    
-    # 1. Calibración Visual (Exagerar un poco para el usuario)
-    # prob_visual = min(prob_delay * 1.6, 0.99)
-    
-    # 2. Semáforo de 3 niveles
-    # Usamos prob_delay (la real) para decidir, prob_visual para mostrar
-    """    
-        if prob_delay < 0.45:
-            estado = "PUNTUAL"
-            nivel_alerta = "Bajo"
-        elif 0.45 <= prob_delay < 0.65:
-            estado = "RIESGO MODERADO"
-            nivel_alerta = "Medio"
-        else:
-            estado = "RETRASADO"
-            nivel_alerta = "Alto"
-    """
-
-    # 3. Formateo de texto del clima
-    source_info = "Tiempo Real 🌤️" if live else "Histórico 📜"
+    # 8. RESPUESTA JSON (Corregida para el Frontend)
+    source_info = "Tiempo Real:" if live else "Historico:"
     info_clima_detallado = f"{source_info} (Lluvia: {final_prcp:.2f}\", Viento: {final_awnd:.1f}mph)"
 
     return {
-        "prevision": "Retrasado" if prob_delay > 0.55 else "Puntual",
-        "probabilidad": round(prob_delay, 2), # Enviamos la real
-        "details": f"Nivel de Riesgo: {round(risk_prev, 2)} | {info_clima_detallado}",
-        "weather_used": {"rain": final_prcp, "wind": final_awnd, "real_prob": prob_delay}
+        "prediction": "RETRASADO" if prob_delay > 0.55 else "PUNTUAL", # Umbral ajustado
+        "probability": round(prob_delay, 2),  # <--- CORREGIDO: "probability" (ingles)
+        "details": f"Riesgo Aeropuerto: {round(risk_airport, 2)} | {info_clima_detallado}",
+        "enriched_data": {
+            "PRCP": final_prcp,
+            "TMAX": 25.0,
+            "AWND": final_awnd,
+            "SNOW": final_snow,
+            "CONCURRENT_FLIGHTS": float(val_concurrent)
+        }
     }

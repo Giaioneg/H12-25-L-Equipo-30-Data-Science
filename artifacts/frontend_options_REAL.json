@@ -1,0 +1,458 @@
+{
+    "carriers": [
+        {
+            "label": "Alaska Airlines Inc.",
+            "value": "Alaska Airlines Inc."
+        },
+        {
+            "label": "Allegiant Air",
+            "value": "Allegiant Air"
+        },
+        {
+            "label": "American Airlines Inc.",
+            "value": "American Airlines Inc."
+        },
+        {
+            "label": "American Eagle Airlines Inc.",
+            "value": "American Eagle Airlines Inc."
+        },
+        {
+            "label": "Atlantic Southeast Airlines",
+            "value": "Atlantic Southeast Airlines"
+        },
+        {
+            "label": "Comair Inc.",
+            "value": "Comair Inc."
+        },
+        {
+            "label": "Delta Air Lines Inc.",
+            "value": "Delta Air Lines Inc."
+        },
+        {
+            "label": "Endeavor Air Inc.",
+            "value": "Endeavor Air Inc."
+        },
+        {
+            "label": "Frontier Airlines Inc.",
+            "value": "Frontier Airlines Inc."
+        },
+        {
+            "label": "Hawaiian Airlines Inc.",
+            "value": "Hawaiian Airlines Inc."
+        },
+        {
+            "label": "JetBlue Airways",
+            "value": "JetBlue Airways"
+        },
+        {
+            "label": "Mesa Airlines Inc.",
+            "value": "Mesa Airlines Inc."
+        },
+        {
+            "label": "Midwest Airline, Inc.",
+            "value": "Midwest Airline, Inc."
+        },
+        {
+            "label": "SkyWest Airlines Inc.",
+            "value": "SkyWest Airlines Inc."
+        },
+        {
+            "label": "Southwest Airlines Co.",
+            "value": "Southwest Airlines Co."
+        },
+        {
+            "label": "Spirit Air Lines",
+            "value": "Spirit Air Lines"
+        },
+        {
+            "label": "United Air Lines Inc.",
+            "value": "United Air Lines Inc."
+        }
+    ],
+    "airports": [
+        {
+            "label": "Adams Field",
+            "value": "Adams Field"
+        },
+        {
+            "label": "Albany International",
+            "value": "Albany International"
+        },
+        {
+            "label": "Albuquerque International Sunport",
+            "value": "Albuquerque International Sunport"
+        },
+        {
+            "label": "Anchorage International",
+            "value": "Anchorage International"
+        },
+        {
+            "label": "Atlanta Municipal",
+            "value": "Atlanta Municipal"
+        },
+        {
+            "label": "Austin - Bergstrom International",
+            "value": "Austin - Bergstrom International"
+        },
+        {
+            "label": "Birmingham Airport",
+            "value": "Birmingham Airport"
+        },
+        {
+            "label": "Boise Air Terminal",
+            "value": "Boise Air Terminal"
+        },
+        {
+            "label": "Bradley International",
+            "value": "Bradley International"
+        },
+        {
+            "label": "Charleston International",
+            "value": "Charleston International"
+        },
+        {
+            "label": "Chicago Midway International",
+            "value": "Chicago Midway International"
+        },
+        {
+            "label": "Chicago O'Hare International",
+            "value": "Chicago O'Hare International"
+        },
+        {
+            "label": "Cincinnati/Northern Kentucky International",
+            "value": "Cincinnati/Northern Kentucky International"
+        },
+        {
+            "label": "Cleveland-Hopkins International",
+            "value": "Cleveland-Hopkins International"
+        },
+        {
+            "label": "Dallas Fort Worth Regional",
+            "value": "Dallas Fort Worth Regional"
+        },
+        {
+            "label": "Dallas Love Field",
+            "value": "Dallas Love Field"
+        },
+        {
+            "label": "Des Moines Municipal",
+            "value": "Des Moines Municipal"
+        },
+        {
+            "label": "Detroit Metro Wayne County",
+            "value": "Detroit Metro Wayne County"
+        },
+        {
+            "label": "Douglas Municipal",
+            "value": "Douglas Municipal"
+        },
+        {
+            "label": "El Paso International",
+            "value": "El Paso International"
+        },
+        {
+            "label": "Eppley Airfield",
+            "value": "Eppley Airfield"
+        },
+        {
+            "label": "Fort Lauderdale-Hollywood International",
+            "value": "Fort Lauderdale-Hollywood International"
+        },
+        {
+            "label": "Friendship International",
+            "value": "Friendship International"
+        },
+        {
+            "label": "General Mitchell Field",
+            "value": "General Mitchell Field"
+        },
+        {
+            "label": "Greater Buffalo International",
+            "value": "Greater Buffalo International"
+        },
+        {
+            "label": "Greenville-Spartanburg",
+            "value": "Greenville-Spartanburg"
+        },
+        {
+            "label": "Hollywood-Burbank Midpoint",
+            "value": "Hollywood-Burbank Midpoint"
+        },
+        {
+            "label": "Honolulu International",
+            "value": "Honolulu International"
+        },
+        {
+            "label": "Houston Intercontinental",
+            "value": "Houston Intercontinental"
+        },
+        {
+            "label": "Indianapolis Muni/Weir Cook",
+            "value": "Indianapolis Muni/Weir Cook"
+        },
+        {
+            "label": "Jacksonville International",
+            "value": "Jacksonville International"
+        },
+        {
+            "label": "James M Cox/Dayton International",
+            "value": "James M Cox/Dayton International"
+        },
+        {
+            "label": "John F. Kennedy International",
+            "value": "John F. Kennedy International"
+        },
+        {
+            "label": "Kahului Airport",
+            "value": "Kahului Airport"
+        },
+        {
+            "label": "Kansas City International",
+            "value": "Kansas City International"
+        },
+        {
+            "label": "Keahole",
+            "value": "Keahole"
+        },
+        {
+            "label": "Kent County",
+            "value": "Kent County"
+        },
+        {
+            "label": "LaGuardia",
+            "value": "LaGuardia"
+        },
+        {
+            "label": "Lambert-St. Louis International",
+            "value": "Lambert-St. Louis International"
+        },
+        {
+            "label": "Lihue Airport",
+            "value": "Lihue Airport"
+        },
+        {
+            "label": "Logan International",
+            "value": "Logan International"
+        },
+        {
+            "label": "Long Beach Daugherty Field",
+            "value": "Long Beach Daugherty Field"
+        },
+        {
+            "label": "Los Angeles International",
+            "value": "Los Angeles International"
+        },
+        {
+            "label": "Louis Armstrong New Orleans International",
+            "value": "Louis Armstrong New Orleans International"
+        },
+        {
+            "label": "McCarran International",
+            "value": "McCarran International"
+        },
+        {
+            "label": "McGhee Tyson",
+            "value": "McGhee Tyson"
+        },
+        {
+            "label": "Memphis International",
+            "value": "Memphis International"
+        },
+        {
+            "label": "Metropolitan Oakland International",
+            "value": "Metropolitan Oakland International"
+        },
+        {
+            "label": "Miami International",
+            "value": "Miami International"
+        },
+        {
+            "label": "Minneapolis-St Paul International",
+            "value": "Minneapolis-St Paul International"
+        },
+        {
+            "label": "Myrtle Beach International",
+            "value": "Myrtle Beach International"
+        },
+        {
+            "label": "Nashville International",
+            "value": "Nashville International"
+        },
+        {
+            "label": "Newark Liberty International",
+            "value": "Newark Liberty International"
+        },
+        {
+            "label": "Norfolk International",
+            "value": "Norfolk International"
+        },
+        {
+            "label": "Northwest Arkansas Regional",
+            "value": "Northwest Arkansas Regional"
+        },
+        {
+            "label": "Ontario International",
+            "value": "Ontario International"
+        },
+        {
+            "label": "Orange County",
+            "value": "Orange County"
+        },
+        {
+            "label": "Orlando International",
+            "value": "Orlando International"
+        },
+        {
+            "label": "Palm Beach International",
+            "value": "Palm Beach International"
+        },
+        {
+            "label": "Palm Springs International",
+            "value": "Palm Springs International"
+        },
+        {
+            "label": "Pensacola Regional",
+            "value": "Pensacola Regional"
+        },
+        {
+            "label": "Philadelphia International",
+            "value": "Philadelphia International"
+        },
+        {
+            "label": "Phoenix Sky Harbor International",
+            "value": "Phoenix Sky Harbor International"
+        },
+        {
+            "label": "Piedmont Triad International",
+            "value": "Piedmont Triad International"
+        },
+        {
+            "label": "Pittsburgh International",
+            "value": "Pittsburgh International"
+        },
+        {
+            "label": "Port Columbus International",
+            "value": "Port Columbus International"
+        },
+        {
+            "label": "Portland International",
+            "value": "Portland International"
+        },
+        {
+            "label": "Portland International Jetport",
+            "value": "Portland International Jetport"
+        },
+        {
+            "label": "Puerto Rico International",
+            "value": "Puerto Rico International"
+        },
+        {
+            "label": "Raleigh-Durham International",
+            "value": "Raleigh-Durham International"
+        },
+        {
+            "label": "Reno/Tahoe International",
+            "value": "Reno/Tahoe International"
+        },
+        {
+            "label": "Richmond International",
+            "value": "Richmond International"
+        },
+        {
+            "label": "Rochester Monroe County",
+            "value": "Rochester Monroe County"
+        },
+        {
+            "label": "Ronald Reagan Washington National",
+            "value": "Ronald Reagan Washington National"
+        },
+        {
+            "label": "Sacramento International",
+            "value": "Sacramento International"
+        },
+        {
+            "label": "Salt Lake City International",
+            "value": "Salt Lake City International"
+        },
+        {
+            "label": "San Antonio International",
+            "value": "San Antonio International"
+        },
+        {
+            "label": "San Diego International Lindbergh Fl",
+            "value": "San Diego International Lindbergh Fl"
+        },
+        {
+            "label": "San Francisco International",
+            "value": "San Francisco International"
+        },
+        {
+            "label": "San Jose International",
+            "value": "San Jose International"
+        },
+        {
+            "label": "Sanford NAS",
+            "value": "Sanford NAS"
+        },
+        {
+            "label": "Savannah/Hilton Head International",
+            "value": "Savannah/Hilton Head International"
+        },
+        {
+            "label": "Seattle International",
+            "value": "Seattle International"
+        },
+        {
+            "label": "Southwest Florida International",
+            "value": "Southwest Florida International"
+        },
+        {
+            "label": "Spokane International",
+            "value": "Spokane International"
+        },
+        {
+            "label": "Standiford Field",
+            "value": "Standiford Field"
+        },
+        {
+            "label": "Stapleton International",
+            "value": "Stapleton International"
+        },
+        {
+            "label": "Syracuse Hancock International",
+            "value": "Syracuse Hancock International"
+        },
+        {
+            "label": "Tampa International",
+            "value": "Tampa International"
+        },
+        {
+            "label": "Theodore Francis Green State",
+            "value": "Theodore Francis Green State"
+        },
+        {
+            "label": "Truax Field",
+            "value": "Truax Field"
+        },
+        {
+            "label": "Tucson International",
+            "value": "Tucson International"
+        },
+        {
+            "label": "Tulsa International",
+            "value": "Tulsa International"
+        },
+        {
+            "label": "Washington Dulles International",
+            "value": "Washington Dulles International"
+        },
+        {
+            "label": "Will Rogers World",
+            "value": "Will Rogers World"
+        },
+        {
+            "label": "William P Hobby",
+            "value": "William P Hobby"
+        }
+    ]
+}

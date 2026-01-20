@@ -1,0 +1,571 @@
+{
+    "carriers": [
+        {
+            "label": "9E - Endeavor Air Inc.",
+            "value": "Endeavor Air Inc.",
+            "code": "9E"
+        },
+        {
+            "label": "AA - American Airlines Inc.",
+            "value": "American Airlines Inc.",
+            "code": "AA"
+        },
+        {
+            "label": "AS - Alaska Airlines Inc.",
+            "value": "Alaska Airlines Inc.",
+            "code": "AS"
+        },
+        {
+            "label": "B6 - JetBlue Airways",
+            "value": "JetBlue Airways",
+            "code": "B6"
+        },
+        {
+            "label": "DL - Delta Air Lines Inc.",
+            "value": "Delta Air Lines Inc.",
+            "code": "DL"
+        },
+        {
+            "label": "EV - Atlantic Southeast Airlines",
+            "value": "Atlantic Southeast Airlines",
+            "code": "EV"
+        },
+        {
+            "label": "F9 - Frontier Airlines Inc.",
+            "value": "Frontier Airlines Inc.",
+            "code": "F9"
+        },
+        {
+            "label": "G4 - Allegiant Air",
+            "value": "Allegiant Air",
+            "code": "G4"
+        },
+        {
+            "label": "HA - Hawaiian Airlines Inc.",
+            "value": "Hawaiian Airlines Inc.",
+            "code": "HA"
+        },
+        {
+            "label": "MQ - American Eagle Airlines Inc.",
+            "value": "American Eagle Airlines Inc.",
+            "code": "MQ"
+        },
+        {
+            "label": "NK - Spirit Air Lines",
+            "value": "Spirit Air Lines",
+            "code": "NK"
+        },
+        {
+            "label": "OH - Comair Inc.",
+            "value": "Comair Inc.",
+            "code": "OH"
+        },
+        {
+            "label": "OO - SkyWest Airlines Inc.",
+            "value": "SkyWest Airlines Inc.",
+            "code": "OO"
+        },
+        {
+            "label": "UA - United Air Lines Inc.",
+            "value": "United Air Lines Inc.",
+            "code": "UA"
+        },
+        {
+            "label": "WN - Southwest Airlines Co.",
+            "value": "Southwest Airlines Co.",
+            "code": "WN"
+        },
+        {
+            "label": "YV - Mesa Airlines Inc.",
+            "value": "Mesa Airlines Inc.",
+            "code": "YV"
+        },
+        {
+            "label": "YX - Midwest Airline, Inc.",
+            "value": "Midwest Airline, Inc.",
+            "code": "YX"
+        }
+    ],
+    "airports": [
+        {
+            "label": "ABQ - Albuquerque International Sunport",
+            "value": "Albuquerque International Sunport",
+            "code": "ABQ"
+        },
+        {
+            "label": "ALB - Albany International",
+            "value": "Albany International",
+            "code": "ALB"
+        },
+        {
+            "label": "ANC - Anchorage International",
+            "value": "Anchorage International",
+            "code": "ANC"
+        },
+        {
+            "label": "ATL - Atlanta Municipal",
+            "value": "Atlanta Municipal",
+            "code": "ATL"
+        },
+        {
+            "label": "AUS - Austin - Bergstrom International",
+            "value": "Austin - Bergstrom International",
+            "code": "AUS"
+        },
+        {
+            "label": "BDL - Bradley International",
+            "value": "Bradley International",
+            "code": "BDL"
+        },
+        {
+            "label": "BHM - Birmingham Airport",
+            "value": "Birmingham Airport",
+            "code": "BHM"
+        },
+        {
+            "label": "BNA - Nashville International",
+            "value": "Nashville International",
+            "code": "BNA"
+        },
+        {
+            "label": "BOI - Boise Air Terminal",
+            "value": "Boise Air Terminal",
+            "code": "BOI"
+        },
+        {
+            "label": "BOS - Logan International",
+            "value": "Logan International",
+            "code": "BOS"
+        },
+        {
+            "label": "BUF - Greater Buffalo International",
+            "value": "Greater Buffalo International",
+            "code": "BUF"
+        },
+        {
+            "label": "BUR - Hollywood-Burbank Midpoint",
+            "value": "Hollywood-Burbank Midpoint",
+            "code": "BUR"
+        },
+        {
+            "label": "BWI - Friendship International",
+            "value": "Friendship International",
+            "code": "BWI"
+        },
+        {
+            "label": "CHS - Charleston International",
+            "value": "Charleston International",
+            "code": "CHS"
+        },
+        {
+            "label": "CLE - Cleveland-Hopkins International",
+            "value": "Cleveland-Hopkins International",
+            "code": "CLE"
+        },
+        {
+            "label": "CLT - Douglas Municipal",
+            "value": "Douglas Municipal",
+            "code": "CLT"
+        },
+        {
+            "label": "CMH - Port Columbus International",
+            "value": "Port Columbus International",
+            "code": "CMH"
+        },
+        {
+            "label": "CVG - Cincinnati/Northern Kentucky International",
+            "value": "Cincinnati/Northern Kentucky International",
+            "code": "CVG"
+        },
+        {
+            "label": "DAL - Dallas Love Field",
+            "value": "Dallas Love Field",
+            "code": "DAL"
+        },
+        {
+            "label": "DAY - James M Cox/Dayton International",
+            "value": "James M Cox/Dayton International",
+            "code": "DAY"
+        },
+        {
+            "label": "DCA - Ronald Reagan Washington National",
+            "value": "Ronald Reagan Washington National",
+            "code": "DCA"
+        },
+        {
+            "label": "DEN - Stapleton International",
+            "value": "Stapleton International",
+            "code": "DEN"
+        },
+        {
+            "label": "DFW - Dallas Fort Worth Regional",
+            "value": "Dallas Fort Worth Regional",
+            "code": "DFW"
+        },
+        {
+            "label": "DSM - Des Moines Municipal",
+            "value": "Des Moines Municipal",
+            "code": "DSM"
+        },
+        {
+            "label": "DTW - Detroit Metro Wayne County",
+            "value": "Detroit Metro Wayne County",
+            "code": "DTW"
+        },
+        {
+            "label": "ELP - El Paso International",
+            "value": "El Paso International",
+            "code": "ELP"
+        },
+        {
+            "label": "EWR - Newark Liberty International",
+            "value": "Newark Liberty International",
+            "code": "EWR"
+        },
+        {
+            "label": "FLL - Fort Lauderdale-Hollywood International",
+            "value": "Fort Lauderdale-Hollywood International",
+            "code": "FLL"
+        },
+        {
+            "label": "GEG - Spokane International",
+            "value": "Spokane International",
+            "code": "GEG"
+        },
+        {
+            "label": "GRR - Kent County",
+            "value": "Kent County",
+            "code": "GRR"
+        },
+        {
+            "label": "GSO - Piedmont Triad International",
+            "value": "Piedmont Triad International",
+            "code": "GSO"
+        },
+        {
+            "label": "GSP - Greenville-Spartanburg",
+            "value": "Greenville-Spartanburg",
+            "code": "GSP"
+        },
+        {
+            "label": "HBU - Houston Intercontinental",
+            "value": "Houston Intercontinental",
+            "code": "HBU"
+        },
+        {
+            "label": "HNL - Honolulu International",
+            "value": "Honolulu International",
+            "code": "HNL"
+        },
+        {
+            "label": "HOU - William P Hobby",
+            "value": "William P Hobby",
+            "code": "HOU"
+        },
+        {
+            "label": "IAD - Washington Dulles International",
+            "value": "Washington Dulles International",
+            "code": "IAD"
+        },
+        {
+            "label": "IND - Indianapolis Muni/Weir Cook",
+            "value": "Indianapolis Muni/Weir Cook",
+            "code": "IND"
+        },
+        {
+            "label": "JAX - Jacksonville International",
+            "value": "Jacksonville International",
+            "code": "JAX"
+        },
+        {
+            "label": "JFK - John F. Kennedy International",
+            "value": "John F. Kennedy International",
+            "code": "JFK"
+        },
+        {
+            "label": "KOA - Keahole",
+            "value": "Keahole",
+            "code": "KOA"
+        },
+        {
+            "label": "LAS - McCarran International",
+            "value": "McCarran International",
+            "code": "LAS"
+        },
+        {
+            "label": "LAX - Los Angeles International",
+            "value": "Los Angeles International",
+            "code": "LAX"
+        },
+        {
+            "label": "LGA - LaGuardia",
+            "value": "LaGuardia",
+            "code": "LGA"
+        },
+        {
+            "label": "LGB - Long Beach Daugherty Field",
+            "value": "Long Beach Daugherty Field",
+            "code": "LGB"
+        },
+        {
+            "label": "LIH - Lihue Airport",
+            "value": "Lihue Airport",
+            "code": "LIH"
+        },
+        {
+            "label": "LIT - Adams Field",
+            "value": "Adams Field",
+            "code": "LIT"
+        },
+        {
+            "label": "MCI - Kansas City International",
+            "value": "Kansas City International",
+            "code": "MCI"
+        },
+        {
+            "label": "MCO - Orlando International",
+            "value": "Orlando International",
+            "code": "MCO"
+        },
+        {
+            "label": "MDW - Chicago Midway International",
+            "value": "Chicago Midway International",
+            "code": "MDW"
+        },
+        {
+            "label": "MEM - Memphis International",
+            "value": "Memphis International",
+            "code": "MEM"
+        },
+        {
+            "label": "MIA - Miami International",
+            "value": "Miami International",
+            "code": "MIA"
+        },
+        {
+            "label": "MKE - General Mitchell Field",
+            "value": "General Mitchell Field",
+            "code": "MKE"
+        },
+        {
+            "label": "MSN - Truax Field",
+            "value": "Truax Field",
+            "code": "MSN"
+        },
+        {
+            "label": "MSP - Minneapolis-St Paul International",
+            "value": "Minneapolis-St Paul International",
+            "code": "MSP"
+        },
+        {
+            "label": "MSY - Louis Armstrong New Orleans International",
+            "value": "Louis Armstrong New Orleans International",
+            "code": "MSY"
+        },
+        {
+            "label": "MYR - Myrtle Beach International",
+            "value": "Myrtle Beach International",
+            "code": "MYR"
+        },
+        {
+            "label": "OAK - Metropolitan Oakland International",
+            "value": "Metropolitan Oakland International",
+            "code": "OAK"
+        },
+        {
+            "label": "OGG - Kahului Airport",
+            "value": "Kahului Airport",
+            "code": "OGG"
+        },
+        {
+            "label": "OKC - Will Rogers World",
+            "value": "Will Rogers World",
+            "code": "OKC"
+        },
+        {
+            "label": "OMA - Eppley Airfield",
+            "value": "Eppley Airfield",
+            "code": "OMA"
+        },
+        {
+            "label": "ONT - Ontario International",
+            "value": "Ontario International",
+            "code": "ONT"
+        },
+        {
+            "label": "ORD - Chicago O'Hare International",
+            "value": "Chicago O'Hare International",
+            "code": "ORD"
+        },
+        {
+            "label": "ORF - Norfolk International",
+            "value": "Norfolk International",
+            "code": "ORF"
+        },
+        {
+            "label": "PBI - Palm Beach International",
+            "value": "Palm Beach International",
+            "code": "PBI"
+        },
+        {
+            "label": "PDX - Portland International",
+            "value": "Portland International",
+            "code": "PDX"
+        },
+        {
+            "label": "PDX - Portland International Jetport",
+            "value": "Portland International Jetport",
+            "code": "PDX"
+        },
+        {
+            "label": "PHL - Philadelphia International",
+            "value": "Philadelphia International",
+            "code": "PHL"
+        },
+        {
+            "label": "PHX - Phoenix Sky Harbor International",
+            "value": "Phoenix Sky Harbor International",
+            "code": "PHX"
+        },
+        {
+            "label": "PIT - Pittsburgh International",
+            "value": "Pittsburgh International",
+            "code": "PIT"
+        },
+        {
+            "label": "PNS - Pensacola Regional",
+            "value": "Pensacola Regional",
+            "code": "PNS"
+        },
+        {
+            "label": "PSP - Palm Springs International",
+            "value": "Palm Springs International",
+            "code": "PSP"
+        },
+        {
+            "label": "PVD - Theodore Francis Green State",
+            "value": "Theodore Francis Green State",
+            "code": "PVD"
+        },
+        {
+            "label": "RDU - Raleigh-Durham International",
+            "value": "Raleigh-Durham International",
+            "code": "RDU"
+        },
+        {
+            "label": "RIC - Richmond International",
+            "value": "Richmond International",
+            "code": "RIC"
+        },
+        {
+            "label": "RNO - Reno/Tahoe International",
+            "value": "Reno/Tahoe International",
+            "code": "RNO"
+        },
+        {
+            "label": "ROC - Rochester Monroe County",
+            "value": "Rochester Monroe County",
+            "code": "ROC"
+        },
+        {
+            "label": "RSW - Southwest Florida International",
+            "value": "Southwest Florida International",
+            "code": "RSW"
+        },
+        {
+            "label": "SAN - San Diego International Lindbergh Fl",
+            "value": "San Diego International Lindbergh Fl",
+            "code": "SAN"
+        },
+        {
+            "label": "SAT - San Antonio International",
+            "value": "San Antonio International",
+            "code": "SAT"
+        },
+        {
+            "label": "SAV - Savannah/Hilton Head International",
+            "value": "Savannah/Hilton Head International",
+            "code": "SAV"
+        },
+        {
+            "label": "SDF - Standiford Field",
+            "value": "Standiford Field",
+            "code": "SDF"
+        },
+        {
+            "label": "SEA - Seattle International",
+            "value": "Seattle International",
+            "code": "SEA"
+        },
+        {
+            "label": "SFB - Sanford NAS",
+            "value": "Sanford NAS",
+            "code": "SFB"
+        },
+        {
+            "label": "SFO - San Francisco International",
+            "value": "San Francisco International",
+            "code": "SFO"
+        },
+        {
+            "label": "SJC - San Jose International",
+            "value": "San Jose International",
+            "code": "SJC"
+        },
+        {
+            "label": "SJU - Puerto Rico International",
+            "value": "Puerto Rico International",
+            "code": "SJU"
+        },
+        {
+            "label": "SLC - Salt Lake City International",
+            "value": "Salt Lake City International",
+            "code": "SLC"
+        },
+        {
+            "label": "SMF - Sacramento International",
+            "value": "Sacramento International",
+            "code": "SMF"
+        },
+        {
+            "label": "SNA - Orange County",
+            "value": "Orange County",
+            "code": "SNA"
+        },
+        {
+            "label": "STL - Lambert-St. Louis International",
+            "value": "Lambert-St. Louis International",
+            "code": "STL"
+        },
+        {
+            "label": "SYR - Syracuse Hancock International",
+            "value": "Syracuse Hancock International",
+            "code": "SYR"
+        },
+        {
+            "label": "TPA - Tampa International",
+            "value": "Tampa International",
+            "code": "TPA"
+        },
+        {
+            "label": "TUL - Tulsa International",
+            "value": "Tulsa International",
+            "code": "TUL"
+        },
+        {
+            "label": "TUS - Tucson International",
+            "value": "Tucson International",
+            "code": "TUS"
+        },
+        {
+            "label": "TYS - McGhee Tyson",
+            "value": "McGhee Tyson",
+            "code": "TYS"
+        },
+        {
+            "label": "XNA - Northwest Arkansas Regional",
+            "value": "Northwest Arkansas Regional",
+            "code": "XNA"
+        }
+    ]
+}
