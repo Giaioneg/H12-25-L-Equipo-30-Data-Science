@@ -1,14 +1,18 @@
 import joblib
+from matplotlib.pylab import f
 import numpy as np
 import onnxruntime as rt
 import os
 import zipfile
 import json
 import requests
+import pytz
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from datetime import datetime
+from timezonefinder import TimezoneFinder
 from datetime import datetime
 
 # --- CONFIGURACION ---
@@ -42,35 +46,90 @@ class FlightRequest(BaseModel):
     SNOW: float | None = None
     AWND: float | None = None
 
+tf = TimezoneFinder()    
+
 # --- 2. FUNCIONES AUXILIARES ---
 def get_live_weather(airport_name, flight_date_str):
+    print(f"\n Buscando clima para: '{airport_name}' en fecha '{flight_date_str}'")
+
     coords = airport_coords.get(airport_name)
-    if not coords: return None 
+    if not coords: 
+        print(f"    ERROR: No tengo coordenadas para '{airport_name}'.")
+        print(f"    Ejemplos de claves que si tengo: {list(airport_coords.keys())[:5]}")
+        
+        return None
+    print(f"   Coordenadas encontradas: {coords}")
+
+    lat = coords['lat']
+    lon = coords['lon']
+     
     try:
-        flight_date = datetime.strptime(flight_date_str, "%Y-%m-%d")
-        today = datetime.now()
+        timezone_str = tf.timezone_at(lng=lon, lat=lat)
+        flight_date = datetime.strptime(flight_date_str, "%Y-%m-%d").date()
+        today = datetime.now().date()
         delta = (flight_date - today).days
+
+        if not timezone_str:
+            # Fallback seguro si el aeropuerto está en medio del mar (raro)
+            timezone_str = "UTC"
+
+        local_tz = pytz.timezone(timezone_str)
+
+        flight_dt_naive = datetime.strptime(flight_date_str, "%Y-%m-%d")
+        flight_dt_local = local_tz.localize(flight_dt_naive)
+
+        now_in_airport = datetime.now(local_tz)
+
+        delta = (flight_dt_local.date() - now_in_airport.date()).days
+
+        print(f"Aeropuerto: {airport_name} | Zona: {timezone_str}")
+        print(f"Vuelo (Local): {flight_dt_local.date()} | Hoy (Local): {now_in_airport.date()}")
+        print(f"⏱Delta días: {delta}")
         
         # Solo buscamos clima si es hoy o en los proximos 7 dias
-        if delta < 0 or delta > 7: return None 
+        if delta < 0 or delta > 7: 
+            print("    Fecha fuera de rango para pronostico (Usando historico).")
+            return None 
         
         lat = coords['lat']; lon = coords['lon']
-        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=precipitation_sum,snowfall_sum,windspeed_10m_max&timezone=auto"
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=precipitation_sum,snowfall_sum,windspeed_10m_max,temperature_2m_max&timezone={timezone_str}"
         headers = {"User-Agent": "FlightDelayApp/1.0"}
         
         # MEJORA: Timeout bajado a 1.5s para no bloquear la demo si falla
         res = requests.get(url, headers=headers, timeout=1.5, verify=False)
+
+        if res.status_code != 200:
+            print(f"   Error API Clima: Status {res.status_code}")
+            return None
         
         data = res.json()
         fechas_api = data.get('daily', {}).get('time', [])
+
+
         idx = -1
         for i, f_api in enumerate(fechas_api):
-            if f_api == flight_date_str: idx = i; break
-        if idx == -1: return None
-        return (data['daily']['precipitation_sum'][idx]/25.4, 
-                data['daily']['snowfall_sum'][idx]/2.54, 
-                data['daily']['windspeed_10m_max'][idx]/1.609)
-    except: return None
+            if f_api == flight_date_str: 
+                idx = i; break
+
+
+        if idx == -1: 
+            print(f"   La fecha {flight_date_str} no esta en la respuesta de la API.")
+            return None
+        
+        temp_c = data['daily']['temperature_2m_max'][idx]
+        print(f"   🌡️ Temperatura real: {temp_c}°C")
+
+        prcp_mm = data['daily']['precipitation_sum'][idx]
+        snow_mm = data['daily']['snowfall_sum'][idx]
+        wind_mph = data['daily']['windspeed_10m_max'][idx]
+
+        print(f" Clima: {prcp_mm}mm Lluvia, {snow_mm}mm Nieve, {temp_c}°C Temp, {wind_mph}km/h Viento")
+
+        return (prcp_mm, snow_mm, wind_mph, temp_c) 
+
+    except Exception as e:
+        print(f"   Excepcion buscando clima: {e}")
+        return None
 
 def load_mappings_from_json():
     """Lee frontend_options.json y genera los diccionarios de traduccion dinamicamente"""
@@ -163,6 +222,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+def health_check():
+    return {
+        "status": "online",
+        "service": "Flight Delay API",
+        "timestamp": datetime.now().isoformat()
+    }
+
+@app.get("/favicon.ico")
+def favicon():
+    return "" # Para que deje de molestar con 404
+
 @app.post("/predict")
 def predict_flight(data: FlightRequest):
 
@@ -196,9 +267,18 @@ def predict_flight(data: FlightRequest):
     # 3. CLIMA
     live = get_live_weather(nombre_aeropuerto, fecha_str)
     if live:
-        final_prcp, final_snow, final_awnd = live
+        final_prcp_mm, final_snow_mm, final_awnd_kmh, final_tmax_c = live
     else:
-        final_prcp, final_snow, final_awnd = 0.08, 0.0, 8.0
+        final_prcp_mm, final_snow_mm, final_awnd_kmh, final_tmax_c = 0.08, 0.0, 8.0, 25.0
+
+    final_prcp_in = final_prcp_mm / 25.4  # Convertir mm a pulgadas
+
+    final_snow_in = final_snow_mm / 25.4  # Convertir mm a pulgadas
+
+    final_awnd_mph = final_awnd_kmh / 1.609  # Convertir km/h a mph
+
+    # Convertir TMAX de °C a °F
+    final_tmax_f_for_model = (final_tmax_c * 9/5) + 32    
 
     # 4. LOOKUPS (Busquedas inteligentes)
     op_key = (nombre_aerolinea, nombre_aeropuerto)
@@ -236,11 +316,24 @@ def predict_flight(data: FlightRequest):
 
     # 6. VECTOR DE ENTRADA (Orden ESTRICTO del modelo ONNX)
     features = [
-        month, day_of_week, 4, 1, val_concurrent,
-        final_prcp, 25.0, final_awnd, val_plane_age, 2000,
-        risk_carrier, risk_airport, risk_time,
-        final_snow, 0.0, val_seats,
-        val_attendants, val_ground,
+        month, 
+        day_of_week, 
+        4, 
+        1, 
+        val_concurrent,
+        final_prcp_in, 
+        final_tmax_f_for_model, 
+        final_awnd_mph, 
+        val_plane_age, 
+        2000,
+        risk_carrier, 
+        risk_airport, 
+        risk_time,
+        final_snow_in, 
+        0.0, 
+        val_seats,
+        val_attendants, 
+        val_ground,
         risk_prev
     ]
 
@@ -260,17 +353,44 @@ def predict_flight(data: FlightRequest):
 
     # 8. RESPUESTA JSON (Corregida para el Frontend)
     source_info = "Tiempo Real:" if live else "Historico:"
-    info_clima_detallado = f"{source_info} (Lluvia: {final_prcp:.2f}\", Viento: {final_awnd:.1f}mph)"
+    weather_parts = []
+
+    weather_parts.append(f"🌡️ {final_tmax_c:.0f}°C | {final_tmax_f_for_model:.0f}°F")
+
+    weather_parts.append(f"Lluvia: {final_prcp_mm}mm | {final_prcp_in:.2f}\"")
+
+    if final_snow_in > 0.01:
+        weather_parts.append(f"Nieve: {final_snow_mm}mm | {final_snow_in:.2f}\"")
+
+    weather_parts.append(f"Viento: {final_awnd_kmh:.1f}km/h | {final_awnd_mph:.1f}mp/h")
+
+    info_clima = ", ".join(weather_parts)
+   
+    info_clima_detallado = f"{source_info} {info_clima}"
 
     return {
         "prediction": "RETRASADO" if prob_delay > 0.55 else "PUNTUAL", # Umbral ajustado
         "probability": round(prob_delay, 2),  # <--- CORREGIDO: "probability" (ingles)
         "details": f"Riesgo Aeropuerto: {round(risk_airport, 2)} | {info_clima_detallado}",
         "enriched_data": {
-            "PRCP": final_prcp,
-            "TMAX": 25.0,
-            "AWND": final_awnd,
-            "SNOW": final_snow,
+
+            # Precipitation
+            "PRCP_MM": final_prcp_mm,
+            "PRCP_IN": final_prcp_in,
+
+            # Snow
+            "SNOW_MM": final_snow_mm,
+            "SNOW_IN": final_snow_in,
+
+            # Temperature
+            "TMAX_C": final_tmax_c,
+            "TMAX_F": final_tmax_f_for_model,
+
+            # Wind
+            "AWND_KMH": final_awnd_kmh,
+            "AWND_MPH": final_awnd_mph,
+
+            # Lookups
             "CONCURRENT_FLIGHTS": float(val_concurrent)
         }
     }

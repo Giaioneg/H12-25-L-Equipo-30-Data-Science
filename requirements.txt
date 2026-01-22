@@ -12,3 +12,5 @@ matplotlib
 seaborn
 pydantic
 requests
+timezonefinder
+pytz
